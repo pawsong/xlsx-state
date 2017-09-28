@@ -86,7 +86,7 @@ function getArrayOfNumbers(range) {
 }
 
 function var_p(...args) {
-  const average = avg.apply(this, arguments);
+  const average = avg(...args);
   let s = 0.0;
   let c = 0;
   for (const arg of args) {
@@ -112,12 +112,12 @@ function EXP(n) {
   return Math.pow(Math.E, n);
 }
 
-function avg() {
-  return sum.apply(this, arguments) / counta.apply(this, arguments);
+function avg(...args) {
+  return sum(...args) / counta(...args);
 }
 
-function stDeviation() {
-  const array = getArrayOfNumbers(arguments);
+function stDeviation(...args) {
+  const array = getArrayOfNumbers(args);
   function _mean(_array) {
     return _array.reduce(function(a, b) {
       return a + b;
