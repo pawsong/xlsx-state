@@ -42,17 +42,17 @@ function trim(a) {
 }
 
 function covariance_p(a, b) {
-  a = getArrayOfNumbers(a);
-  b = getArrayOfNumbers(b);
-  if (a.length !== b.length) {
+  const _a = getArrayOfNumbers(a);
+  const _b = getArrayOfNumbers(b);
+  if (_a.length !== _b.length) {
     return 'N/D';
   }
-  const inv_n = 1.0 / a.length;
-  const avg_a = sum.apply(this, a) / a.length;
-  const avg_b = sum.apply(this, b) / b.length;
+  const inv_n = 1.0 / _a.length;
+  const avg_a = sum.apply(this, _a) / _a.length;
+  const avg_b = sum.apply(this, _b) / _b.length;
   let s = 0.0;
-  for (let i = 0; i < a.length; i ++) {
-    s += (a[i] - avg_a) * (b[i] - avg_b);
+  for (let i = 0; i < _a.length; i ++) {
+    s += (_a[i] - avg_a) * (_b[i] - avg_b);
   }
   return s * inv_n;
 }
@@ -288,9 +288,7 @@ function counta(...args) {
   return r;
 }
 
-function pmt(rate_per_period, number_of_payments, present_value, future_value, type) {
-  type = type || 0;
-  future_value = future_value || 0;
+function pmt(rate_per_period, number_of_payments, present_value, future_value = 0, type = 0) {
   if (rate_per_period !== 0.0) {
     // Interest rate exists
     const q = Math.pow(1 + rate_per_period, number_of_payments);
@@ -779,8 +777,7 @@ export function exec_fx(name, args) {
   return xlsx_Fx[name].apply(this, args);
 }
 
-export function import_functions(formulajs, opts?) {
-  opts = opts || {};
+export function import_functions(formulajs, opts: any = {}) {
   const prefix = opts.prefix || '';
   const keys = Object.keys(formulajs);
   for (const key of keys) {

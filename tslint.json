@@ -16,6 +16,7 @@
     "no-empty-interface": [false],
     "max-classes-per-file": [false],
     "max-line-length": false,
-    "no-console": false
+    "no-console": false,
+    "no-parameter-reassignment": true
   }
 }
