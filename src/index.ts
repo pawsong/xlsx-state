@@ -48,8 +48,8 @@ function covariance_p(a, b) {
     return 'N/D';
   }
   const inv_n = 1.0 / _a.length;
-  const avg_a = sum.apply(this, _a) / _a.length;
-  const avg_b = sum.apply(this, _b) / _b.length;
+  const avg_a = sum(..._a) / _a.length;
+  const avg_b = sum(..._b) / _b.length;
   let s = 0.0;
   for (let i = 0; i < _a.length; i ++) {
     s += (_a[i] - avg_a) * (_b[i] - avg_b);
@@ -386,52 +386,62 @@ function my_assign(dest, source) {
   return obj;
 }
 
-function UserFnExecutor(user_function) {
-  const self = this;
-  self.name = 'UserFn';
-  self.args = [];
-  self.calc = function() {
-    return user_function.apply(self, self.args);
-  };
-  self.push = function(buffer) {
-    self.args.push(buffer.calc());
-  };
+class UserFnExecutor {
+  private name;
+  private args;
+
+  constructor(private user_function) {
+    this.name = 'UserFn';
+    this.args = [];
+  }
+
+  public calc() {
+    return this.user_function.apply(this, this.args);
+  }
+
+  public push(buffer) {
+    this.args.push(buffer.calc());
+  }
 }
 
-function RawValue(value) {
-  this.calc = function() {
-    return value;
-  };
+class RawValue {
+  constructor(private value) {}
+
+  public calc() {
+    return this.value;
+  }
 }
 
-function RefValue(str_expression, formula) {
-  this.calc = function() {
+class RefValue {
+  constructor(private str_expression, private formula) {}
+
+  public calc() {
     let cell_name;
     let sheet;
     let sheet_name;
-    if (str_expression.indexOf('!') !== -1) {
-      const aux = str_expression.split('!');
-      sheet = formula.wb.Sheets[aux[0]];
+    if (this.str_expression.indexOf('!') !== -1) {
+      const aux = this.str_expression.split('!');
+      sheet = this.formula.wb.Sheets[aux[0]];
       if (!sheet) {
         const quoted = aux[0].match(/^'(.*)'$/);
         if (quoted) {
           aux[0] = quoted[1];
         }
-        sheet = formula.wb.Sheets[aux[0]];
+        sheet = this.formula.wb.Sheets[aux[0]];
       }
       sheet_name = aux[0];
       cell_name = aux[1];
     } else {
-      sheet = formula.sheet;
-      sheet_name = formula.sheet_name;
-      cell_name = str_expression;
+      sheet = this.formula.sheet;
+      sheet_name = this.formula.sheet_name;
+      cell_name = this.str_expression;
     }
     const cell_full_name = sheet_name + '!' + cell_name;
     const ref_cell = sheet[cell_name];
     if (!ref_cell) {
       throw Error('Cell ' + cell_full_name + ' not found.');
     }
-    const formula_ref = formula.formula_ref[cell_full_name];
+    const formula_ref = this.formula.formula_ref[cell_full_name];
     if (formula_ref) {
       if (formula_ref.status === 'new') {
         exec_formula(formula_ref);
@@ -444,7 +454,7 @@ function RefValue(str_expression, formula) {
     } else {
       return sheet[cell_name].v;
     }
-  };
+  }
 }
 
 export function col_str_2_int(col_str) {
@@ -469,20 +479,22 @@ export function int_2_col_str(n) {
   return columnName;
 }
 
-function Range(str_expression, formula) {
-  this.calc = function() {
+class Range {
+  constructor(private str_expression, private formula) {}
+
+  public calc() {
     let range_expression;
     let sheet_name;
     let sheet;
-    if (str_expression.indexOf('!') !== -1) {
-      const aux = str_expression.split('!');
+    if (this.str_expression.indexOf('!') !== -1) {
+      const aux = this.str_expression.split('!');
       sheet_name = aux[0];
       range_expression = aux[1];
     } else {
-      sheet_name = formula.sheet_name;
-      range_expression = str_expression;
+      sheet_name = this.formula.sheet_name;
+      range_expression = this.str_expression;
     }
-    sheet = formula.wb.Sheets[sheet_name];
+    sheet = this.formula.wb.Sheets[sheet_name];
     const arr = range_expression.split(':');
     const min_row = parseInt(arr[0].replace(/^[A-Z]+/, ''), 10) || 0;
     let str_max_row = arr[1].replace(/^[A-Z]+/, '');
@@ -501,10 +513,10 @@ function Range(str_expression, formula) {
       for (let j = min_col; j <= max_col; j++) {
         const cell_name = int_2_col_str(j) + i;
         const cell_full_name = sheet_name + '!' + cell_name;
-        if (formula.formula_ref[cell_full_name]) {
-          if (formula.formula_ref[cell_full_name].status === 'new') {
-            exec_formula(formula.formula_ref[cell_full_name]);
-          } else if (formula.formula_ref[cell_full_name].status === 'working') {
+        if (this.formula.formula_ref[cell_full_name]) {
+          if (this.formula.formula_ref[cell_full_name].status === 'new') {
+            exec_formula(this.formula.formula_ref[cell_full_name]);
+          } else if (this.formula.formula_ref[cell_full_name].status === 'working') {
             throw new Error('Circular ref');
           }
           row.push(sheet[cell_name].v);
@@ -516,120 +528,125 @@ function Range(str_expression, formula) {
       }
     }
     return matrix;
-  };
+  }
 }
 
 let exp_id = 0;
 
-function Exp(formula) {
-  const self = this;
-  self.id = ++exp_id;
-  self.args = [];
-  self.name = 'Expression';
+class Exp {
+  private id: number;
+  private args: any[];
+  private name: string;
+  private last_arg;
 
-  function exec(op, fn) {
-    for (let i = 0; i < self.args.length; i++) {
-      if (self.args[i] === op) {
-        try {
-          const r = fn(self.args[i - 1].calc(), self.args[i + 1].calc());
-          self.args.splice(i - 1, 3, new RawValue(r));
-          i--;
-        } catch (e) {
-          throw Error(formula.name + ': evaluating ' + formula.cell.f + '\n' + e.message);
-        }
-      }
-    }
+  constructor(private formula) {
+    this.id = ++exp_id;
+    this.args = [];
+    this.name = 'Expression';
   }
 
-  function exec_minus() {
-    for (let i = self.args.length; i--;) {
-      if (self.args[i] === '-') {
-        const r = -self.args[i + 1].calc();
-        if (typeof self.args[i - 1] !== 'string' && i > 0) {
-          self.args.splice(i, 1, '+');
-          self.args.splice(i + 1, 1, new RawValue(r));
-        } else {
-          self.args.splice(i, 2, new RawValue(r));
-        }
-      }
-    }
-  }
-
-  self.calc = function() {
-    exec_minus();
-    exec('^', function(a, b) {
+  public calc() {
+    this.exec_minus();
+    this.exec('^', function(a, b) {
       return Math.pow(+a, +b);
     });
-    exec('*', function(a, b) {
+    this.exec('*', function(a, b) {
       return (+a) * (+b);
     });
-    exec('/', function(a, b) {
+    this.exec('/', function(a, b) {
       return (+a) / (+b);
     });
-    exec('+', function(a, b) {
+    this.exec('+', function(a, b) {
       return (+a) + (+b);
     });
-    exec('&', function(a, b) {
+    this.exec('&', function(a, b) {
       return '' + a + b;
     });
-    exec('<', function(a, b) {
+    this.exec('<', function(a, b) {
       return a < b;
     });
-    exec('>', function(a, b) {
+    this.exec('>', function(a, b) {
       return a > b;
     });
-    exec('>=', function(a, b) {
+    this.exec('>=', function(a, b) {
       return a >= b;
     });
-    exec('<=', function(a, b) {
+    this.exec('<=', function(a, b) {
       return a <= b;
     });
-    exec('<>', function(a, b) {
+    this.exec('<>', function(a, b) {
       return a !== b;
     });
-    exec('=', function(a, b) {
+    this.exec('=', function(a, b) {
       return a === b;
     });
-    if (self.args.length === 1) {
-      if (typeof(self.args[0].calc) !== 'function') {
-        return self.args[0];
+    if (this.args.length === 1) {
+      if (typeof(this.args[0].calc) !== 'function') {
+        return this.args[0];
       } else {
-        return self.args[0].calc();
+        return this.args[0].calc();
       }
     }
-  };
+  }
 
-  let last_arg;
-  self.push = function(buffer) {
+  public push(buffer) {
     if (buffer) {
       let v;
       if (!isNaN(buffer)) {
         v = new RawValue(+buffer);
       } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
-        v = new Range(buffer.trim().replace(/\$/g, ''), formula);
+        v = new Range(buffer.trim().replace(/\$/g, ''), this.formula);
       } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
-        v = new Range(buffer.trim().replace(/\$/g, ''), formula);
+        v = new Range(buffer.trim().replace(/\$/g, ''), this.formula);
       } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+:[A-Z]+$/)) {
-        v = new Range(buffer.trim().replace(/\$/g, ''), formula);
+        v = new Range(buffer.trim().replace(/\$/g, ''), this.formula);
       } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+:[A-Z]+$/)) {
-        v = new Range(buffer.trim().replace(/\$/g, ''), formula);
+        v = new Range(buffer.trim().replace(/\$/g, ''), this.formula);
       } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+[0-9]+$/)) {
-        v = new RefValue(buffer.trim().replace(/\$/g, ''), formula);
+        v = new RefValue(buffer.trim().replace(/\$/g, ''), this.formula);
       } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+[0-9]+$/)) {
-        v = new RefValue(buffer.trim().replace(/\$/g, ''), formula);
+        v = new RefValue(buffer.trim().replace(/\$/g, ''), this.formula);
       } else if (typeof buffer === 'string' && !isNaN(Number(buffer.trim().replace(/%$/, '')))) {
         v = new RawValue(+(buffer.trim().replace(/%$/, '')) / 100.0);
       } else {
         v = buffer;
       }
-      if (((v === '=') && (last_arg === '>' || last_arg === '<')) || (last_arg === '<' && v === '>')) {
-        self.args[self.args.length - 1] += v;
+      if (((v === '=') && (this.last_arg === '>' || this.last_arg === '<')) || (this.last_arg === '<' && v === '>')) {
+        this.args[this.args.length - 1] += v;
       } else {
-        self.args.push(v);
+        this.args.push(v);
       }
-      last_arg = v;
+      this.last_arg = v;
     }
-  };
+  }
+
+  private exec(op, fn) {
+    for (let i = 0; i < this.args.length; i++) {
+      if (this.args[i] === op) {
+        try {
+          const r = fn(this.args[i - 1].calc(), this.args[i + 1].calc());
+          this.args.splice(i - 1, 3, new RawValue(r));
+          i--;
+        } catch (e) {
+          throw Error(this.formula.name + ': evaluating ' + this.formula.cell.f + '\n' + e.message);
+        }
+      }
+    }
+  }
+
+  private exec_minus() {
+    for (let i = this.args.length; i--;) {
+      if (this.args[i] === '-') {
+        const r = -this.args[i + 1].calc();
+        if (typeof this.args[i - 1] !== 'string' && i > 0) {
+          this.args.splice(i, 1, '+');
+          this.args.splice(i + 1, 1, new RawValue(r));
+        } else {
+          this.args.splice(i, 2, new RawValue(r));
+        }
+      }
+    }
+  }
 }
 
 const common_operations = {

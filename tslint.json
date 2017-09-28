@@ -4,7 +4,6 @@
     "quotemark": [true, "single", "avoid-escape"],
     "curly": false,
     "interface-name": [false],
-    "member-access": false,
     "variable-name": false,
     "no-var-requires": false,
     "object-literal-sort-keys": false,
