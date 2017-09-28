@@ -1,3 +1,6 @@
+import { WorkBook } from 'xlsx';
+import cloneDeep = require('lodash/cloneDeep');
+
 // +---------------------+
 // | FORMULAS REGISTERED |
 // +---------------------+
@@ -807,7 +810,16 @@ export function import_functions(formulajs, opts: any = {}) {
   }
 }
 
-export default function(workbook) {
+/**
+ * Immutable invalidate function
+ */
+export function invalidate(workbook: WorkBook) {
+  const next = cloneDeep(workbook);
+  _invalidate(next);
+  return next;
+}
+
+export default function _invalidate(workbook: WorkBook) {
   const formulas = find_all_cells_with_formulas(workbook);
   for (let i = formulas.length - 1; i >= 0; i--) {
     exec_formula(formulas[i]);
