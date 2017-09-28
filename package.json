@@ -1,9 +1,14 @@
 {
   "name": "xlsx-state",
   "version": "0.1.0",
-  "description": "A simple xlsx formula calculator.",
+  "description": "xlsx formula result cache invalidator",
   "main": "lib/index.js",
-  "repository": "",
+  "types": "lib/index.d.ts",
+  "files": [
+    "src",
+    "lib"
+  ],
+  "repository": "pawsong/xlsx-state",
   "author": "Seunggeun Song <seunggeun@nector.co>",
   "contributors": [
     "Sr Oshiro <fabio.oshiro@gmail.com>"
@@ -22,11 +27,11 @@
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
     "tslint": "^5.7.0",
-    "typescript": "^2.5.3",
-    "xlsx": "^0.11.4"
+    "typescript": "^2.5.3"
   },
   "dependencies": {
     "@types/lodash": "^4.14.76",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "xlsx": "^0.11.4"
   }
 }
