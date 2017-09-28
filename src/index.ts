@@ -1,7 +1,7 @@
 // +---------------------+
 // | FORMULAS REGISTERED |
 // +---------------------+
-var xlsx_Fx = {
+const xlsx_Fx = {
   'FLOOR': Math.floor,
   '_xlfn.FLOOR.MATH': Math.floor,
   'ABS': Math.abs,
@@ -26,7 +26,7 @@ var xlsx_Fx = {
   '_xlfn.COVARIANCE.P': covariance_p,
   'COVARIANCE.P': covariance_p,
   'TRIM': trim,
-  'LEN': len
+  'LEN': len,
   // 'HELLO': hello
 };
 
@@ -48,31 +48,30 @@ function trim(a) {
 function covariance_p(a, b) {
   a = getArrayOfNumbers(a);
   b = getArrayOfNumbers(b);
-  if (a.length != b.length) {
+  if (a.length !== b.length) {
     return 'N/D';
   }
-  var inv_n = 1.0 / a.length;
-  var avg_a = sum.apply(this, a) / a.length;
-  var avg_b = sum.apply(this, b) / b.length;
-  var s = 0.0;
-  for(var i = 0; i < a.length; i ++) {
+  const inv_n = 1.0 / a.length;
+  const avg_a = sum.apply(this, a) / a.length;
+  const avg_b = sum.apply(this, b) / b.length;
+  let s = 0.0;
+  for (let i = 0; i < a.length; i ++) {
     s += (a[i] - avg_a) * (b[i] - avg_b);
   }
   return s * inv_n;
 }
 
 function getArrayOfNumbers(range) {
-  var arr = [];
-  for (var i = 0; i < range.length; i++) {
-    var arg = range[i];
+  const arr = [];
+  for (const arg of range) {
     if (Array.isArray(arg)) {
-      var matrix = arg;
-      for (var j = matrix.length; j--;) {
-        if (typeof(matrix[j]) == 'number') {
+      const matrix = arg;
+      for (let j = matrix.length; j--;) {
+        if (typeof(matrix[j]) === 'number') {
           arr.push(matrix[j]);
-        } else if (Array.isArray(matrix[j])){
-          for (var k = matrix[j].length; k--;) {
-            if (typeof(matrix[j][k]) == 'number') {
+        } else if (Array.isArray(matrix[j])) {
+          for (let k = matrix[j].length; k--;) {
+            if (typeof(matrix[j][k]) === 'number') {
               arr.push(matrix[j][k]);
             }
           }
@@ -82,7 +81,7 @@ function getArrayOfNumbers(range) {
         // }
       }
     } else {
-      if (typeof(arg) == 'number') {
+      if (typeof(arg) === 'number') {
         arr.push(arg);
       }
     }
@@ -90,16 +89,15 @@ function getArrayOfNumbers(range) {
   return arr;
 }
 
-function var_p() {
-  var average = avg.apply(this, arguments);
-  var s = 0.0;
-  var c = 0;
-  for (var i = 0; i < arguments.length; i++) {
-    var arg = arguments[i];
+function var_p(...args) {
+  const average = avg.apply(this, arguments);
+  let s = 0.0;
+  let c = 0;
+  for (const arg of args) {
     if (Array.isArray(arg)) {
-      var matrix = arg;
-      for (var j = matrix.length; j--;) {
-        for (var k = matrix[j].length; k--;) {
+      const matrix = arg;
+      for (let j = matrix.length; j--;) {
+        for (let k = matrix[j].length; k--;) {
           if (matrix[j][k] !== null && matrix[j][k] !== undefined) {
             s += Math.pow(matrix[j][k] - average, 2);
             c++;
@@ -123,16 +121,16 @@ function avg() {
 }
 
 function stDeviation() {
-  var array = getArrayOfNumbers(arguments);
-  function _mean(array) {
-    return array.reduce(function(a, b) {
+  const array = getArrayOfNumbers(arguments);
+  function _mean(_array) {
+    return _array.reduce(function(a, b) {
       return a + b;
-    }) / array.length;
+    }) / _array.length;
   }
-  var mean = _mean(array),
-    dev = array.map(function(itm) {
-      return (itm - mean) * (itm - mean);
-    });
+  const mean = _mean(array);
+  const dev = array.map(function(itm) {
+    return (itm - mean) * (itm - mean);
+  });
   return Math.sqrt(dev.reduce(function(a, b) {
     return a + b;
   }) / (array.length - 1));
@@ -161,23 +159,25 @@ function stDeviation() {
   */
 function normsInv(p, mu, sigma) {
   if (p < 0 || p > 1) {
-    throw "The probality p must be bigger than 0 and smaller than 1";
+    throw new Error('The probality p must be bigger than 0 and smaller than 1');
   }
   if (sigma < 0) {
-    throw "The standard deviation sigma must be positive";
+    throw new Error('The standard deviation sigma must be positive');
   }
 
-  if (p == 0) {
+  if (p === 0) {
     return -Infinity;
   }
-  if (p == 1) {
+  if (p === 1) {
     return Infinity;
   }
-  if (sigma == 0) {
+  if (sigma === 0) {
     return mu;
   }
 
-  var q, r, val;
+  let q;
+  let r;
+  let val;
 
   q = p - 0.5;
 
@@ -198,8 +198,7 @@ function normsInv(p, mu, sigma) {
             28729.085735721942674) * r + 39307.89580009271061) * r +
           21213.794301586595867) * r + 5394.1960214247511077) * r +
         687.1870074920579083) * r + 42.313330701600911252) * r + 1);
-  }
-  else { /* closer than 0.075 from {0,1} boundary */
+  } else { /* closer than 0.075 from {0,1} boundary */
 
     /* r = min(p, 1-p) < 0.075 */
     if (q > 0)
@@ -223,8 +222,7 @@ function normsInv(p, mu, sigma) {
             .14810397642748007459) * r + .68976733498510000455) *
           r + 1.6763848301838038494) * r +
         2.05319162663775882187) * r + 1);
-    }
-    else { /* very close to  0 or 1 */
+    } else { /* very close to  0 or 1 */
       r += -5;
       val = (((((((r * 2.01033439929228813265e-7 +
                 2.71155556874348757815e-5) * r +
@@ -247,46 +245,45 @@ function normsInv(p, mu, sigma) {
 }
 
 function irr(range, guess) {
-  var min = -2.0;
-  var max = 1.0;
-  var n = 0;
+  let _min = -2.0;
+  let _max = 1.0;
+  let n = 0;
+  let NPV;
+  let guest;
   do {
-    var guest = (min + max) / 2;
-    var NPV = 0;
-    for (var i = 0; i < range.length; i++) {
-      var arg = range[i];
+    guest = (_min + _max) / 2;
+    NPV = 0;
+    for (let i = 0; i < range.length; i++) {
+      const arg = range[i];
       NPV += arg[0] / Math.pow((1 + guest), i);
     }
     if (NPV > 0) {
-      if (min === max) {
-        max += Math.abs(guest);
+      if (_min === _max) {
+        _max += Math.abs(guest);
       }
-      min = guest;
-    }
-    else {
-      max = guest;
+      _min = guest;
+    } else {
+      _max = guest;
     }
     n++;
   } while (Math.abs(NPV) > 0.000001 && n < 100000);
-  //console.log(n);
+
   return guest;
 }
 
-function counta() {
-  var r = 0;
-  for (var i = arguments.length; i--;) {
-    var arg = arguments[i];
+function counta(...args) {
+  let r = 0;
+  for (const arg of args) {
     if (Array.isArray(arg)) {
-      var matrix = arg;
-      for (var j = matrix.length; j--;) {
-        for (var k = matrix[j].length; k--;) {
+      const matrix = arg;
+      for (let j = matrix.length; j--;) {
+        for (let k = matrix[j].length; k--;) {
           if (matrix[j][k] !== null && matrix[j][k] !== undefined) {
             r++;
           }
         }
       }
-    }
-    else {
+    } else {
       if (arg !== null && arg !== undefined) {
         r++;
       }
@@ -298,13 +295,12 @@ function counta() {
 function pmt(rate_per_period, number_of_payments, present_value, future_value, type) {
   type = type || 0;
   future_value = future_value || 0;
-  if (rate_per_period != 0.0) {
+  if (rate_per_period !== 0.0) {
     // Interest rate exists
-    var q = Math.pow(1 + rate_per_period, number_of_payments);
+    const q = Math.pow(1 + rate_per_period, number_of_payments);
     return -(rate_per_period * (future_value + (q * present_value))) / ((-1 + q) * (1 + rate_per_period * (type)));
 
-  }
-  else if (number_of_payments != 0.0) {
+  } else if (number_of_payments !== 0.0) {
     // No interest rate, but number of payments exists
     return -(future_value + present_value) / number_of_payments;
   }
@@ -314,73 +310,64 @@ function pmt(rate_per_period, number_of_payments, present_value, future_value, t
 function _if(condition, _then, _else) {
   if (condition) {
     return _then;
-  }
-  else {
+  } else {
     return _else;
   }
 }
 
-function concatenate() {
-  var r = '';
-  for (var i = 0; i < arguments.length; i++) {
-    r += arguments[i];
+function concatenate(...args) {
+  let r = '';
+  for (const arg of args) {
+    r += arg;
   }
   return r;
 }
 
-function sum() {
-  var r = 0;
-  for (var i = arguments.length; i--;) {
-    var arg = arguments[i];
+function sum(...args) {
+  let r = 0;
+  for (const arg of args) {
     if (Array.isArray(arg)) {
-      var matrix = arg;
-      for (var j = matrix.length; j--;) {
-        for (var k = matrix[j].length; k--;) {
+      const matrix = arg;
+      for (let j = matrix.length; j--;) {
+        for (let k = matrix[j].length; k--;) {
           r += +matrix[j][k];
         }
       }
-    }
-    else {
+    } else {
       r += +arg;
     }
   }
   return r;
 }
 
-function max() {
-  var max = null;
-  for (var i = arguments.length; i--;) {
-    var arg = arguments[i];
+function max(...args) {
+  let _max = null;
+  for (const arg of args) {
     if (Array.isArray(arg)) {
-      var arr = arg;
-      for (var j = arr.length; j--;) {
-        max = max == null || max < arr[j] ? arr[j] : max;
+      const arr = arg;
+      for (let j = arr.length; j--;) {
+        _max = _max == null || _max < arr[j] ? arr[j] : _max;
       }
-    }
-    else if (!isNaN(arg)) {
-      max = max == null || max < arg ? arg : max;
-    }
-    else {
+    } else if (!isNaN(arg)) {
+      _max = _max == null || _max < arg ? arg : _max;
+    } else {
       console.log('WTF??', arg);
     }
   }
-  return max;
+  return _max;
 }
 
-function min() {
-  var result = null;
-  for (var i = arguments.length; i--;) {
-    var arg = arguments[i];
+function min(...args) {
+  let result = null;
+  for (const arg of args) {
     if (Array.isArray(arg)) {
-      var arr = arg;
-      for (var j = arr.length; j--;) {
+      const arr = arg;
+      for (let j = arr.length; j--;) {
         result = result == null || result > arr[j] ? arr[j] : result;
       }
-    }
-    else if (!isNaN(arg)) {
+    } else if (!isNaN(arg)) {
       result = result == null || result > arg ? arg : result;
-    }
-    else {
+    } else {
       console.log('WTF??', arg);
     }
   }
@@ -388,34 +375,35 @@ function min() {
 }
 
 function vlookup(key, matrix, return_index) {
-  for (var i = 0; i < matrix.length; i++) {
-    if (matrix[i][0] == key) {
-      return matrix[i][return_index - 1];
+  for (const row of matrix) {
+    if (row[0] === key) {
+      return row[return_index - 1];
     }
   }
   throw Error('#N/A');
 }
 
 export default function(workbook) {
-  var formulas = find_all_cells_with_formulas(workbook);
-  for (var i = formulas.length - 1; i >= 0; i--) {
+  const formulas = find_all_cells_with_formulas(workbook);
+  for (let i = formulas.length - 1; i >= 0; i--) {
     exec_formula(formulas[i]);
   }
-};
+}
 
 export function set_fx(name, fn) {
   xlsx_Fx[name] = fn;
-};
+}
 
 export function exec_fx(name, args) {
   return xlsx_Fx[name].apply(this, args);
-};
+}
 
 export function import_functions(formulajs, opts?) {
   opts = opts || {};
-  var prefix = opts.prefix || '';
-  for(var key in formulajs) {
-    var obj = formulajs[key];
+  const prefix = opts.prefix || '';
+  const keys = Object.keys(formulajs);
+  for (const key of keys) {
+    const obj = formulajs[key];
     if (typeof(obj) === 'function') {
       xlsx_Fx[prefix + key] = obj;
     } else if (typeof(obj) === 'object') {
@@ -425,15 +413,16 @@ export function import_functions(formulajs, opts?) {
 }
 
 function my_assign(dest, source) {
-  var obj = JSON.parse(JSON.stringify(dest));
-  for (var k in source) {
+  const obj = JSON.parse(JSON.stringify(dest));
+  const keys = Object.keys(source);
+  for (const k of keys) {
     obj[k] = source[k];
   }
   return obj;
 }
 
 function UserFnExecutor(user_function) {
-  var self = this;
+  const self = this;
   self.name = 'UserFn';
   self.args = [];
   self.calc = function() {
@@ -452,12 +441,14 @@ function RawValue(value) {
 
 function RefValue(str_expression, formula) {
   this.calc = function() {
-    var cell_name, sheet, sheet_name;
-    if (str_expression.indexOf('!') != -1) {
-      var aux = str_expression.split('!');
+    let cell_name;
+    let sheet;
+    let sheet_name;
+    if (str_expression.indexOf('!') !== -1) {
+      const aux = str_expression.split('!');
       sheet = formula.wb.Sheets[aux[0]];
       if (!sheet) {
-        var quoted = aux[0].match(/^'(.*)'$/);
+        const quoted = aux[0].match(/^'(.*)'$/);
         if (quoted) {
           aux[0] = quoted[1];
         }
@@ -465,50 +456,46 @@ function RefValue(str_expression, formula) {
       }
       sheet_name = aux[0];
       cell_name = aux[1];
-    }
-    else {
+    } else {
       sheet = formula.sheet;
       sheet_name = formula.sheet_name;
       cell_name = str_expression;
     }
-    var cell_full_name = sheet_name + '!' + cell_name;
-    var ref_cell = sheet[cell_name];
+    const cell_full_name = sheet_name + '!' + cell_name;
+    const ref_cell = sheet[cell_name];
     if (!ref_cell) {
-      throw Error("Cell " + cell_full_name + " not found.");
+      throw Error('Cell ' + cell_full_name + ' not found.');
     }
-    var formula_ref = formula.formula_ref[cell_full_name];
+    const formula_ref = formula.formula_ref[cell_full_name];
     if (formula_ref) {
       if (formula_ref.status === 'new') {
         exec_formula(formula_ref);
         return sheet[cell_name].v;
-      }
-      else if (formula_ref.status === 'working') {
+      } else if (formula_ref.status === 'working') {
         throw new Error('Circular ref');
-      }
-      else if (formula_ref.status === 'done') {
+      } else if (formula_ref.status === 'done') {
         return sheet[cell_name].v;
       }
-    }
-    else {
+    } else {
       return sheet[cell_name].v;
     }
   };
 }
 
 export function col_str_2_int(col_str) {
-  var r = 0;
-  var colstr = col_str.replace(/[0-9]+$/, '');
-  for (var i = colstr.length; i--;) {
+  let r = 0;
+  const colstr = col_str.replace(/[0-9]+$/, '');
+  for (let i = colstr.length; i--;) {
     r += Math.pow(26, colstr.length - i - 1) * (colstr.charCodeAt(i) - 64);
   }
   return r - 1;
 }
 
 export function int_2_col_str(n) {
-  var dividend = n + 1;
-  var columnName = '';
-  var modulo;
-  var guard = 10;
+  let dividend = n + 1;
+  let columnName = '';
+  let modulo;
+  let guard = 10;
   while (dividend > 0 && guard --) {
       modulo = (dividend - 1) % 26;
       columnName = String.fromCharCode(modulo + 65) + columnName;
@@ -519,9 +506,11 @@ export function int_2_col_str(n) {
 
 function Range(str_expression, formula) {
   this.calc = function() {
-    var range_expression, sheet_name, sheet;
-    if (str_expression.indexOf('!') != -1) {
-      var aux = str_expression.split('!');
+    let range_expression;
+    let sheet_name;
+    let sheet;
+    if (str_expression.indexOf('!') !== -1) {
+      const aux = str_expression.split('!');
       sheet_name = aux[0];
       range_expression = aux[1];
     } else {
@@ -529,37 +518,34 @@ function Range(str_expression, formula) {
       range_expression = str_expression;
     }
     sheet = formula.wb.Sheets[sheet_name];
-    var arr = range_expression.split(':');
-    var min_row = parseInt(arr[0].replace(/^[A-Z]+/, ''), 10) || 0;
-    var str_max_row = arr[1].replace(/^[A-Z]+/, '');
-    var max_row;
+    const arr = range_expression.split(':');
+    const min_row = parseInt(arr[0].replace(/^[A-Z]+/, ''), 10) || 0;
+    let str_max_row = arr[1].replace(/^[A-Z]+/, '');
+    let max_row;
     if (str_max_row === '' && sheet['!ref']) {
       str_max_row = sheet['!ref'].split(':')[1].replace(/^[A-Z]+/, '');
     }
     // the max is 1048576, but TLE
-    max_row = parseInt(str_max_row == '' ? '500000' : str_max_row, 10);
-    var min_col = col_str_2_int(arr[0]);
-    var max_col = col_str_2_int(arr[1]);
-    var matrix = [];
-    for (var i = min_row; i <= max_row; i++) {
-      var row = [];
+    max_row = parseInt(str_max_row === '' ? '500000' : str_max_row, 10);
+    const min_col = col_str_2_int(arr[0]);
+    const max_col = col_str_2_int(arr[1]);
+    const matrix = [];
+    for (let i = min_row; i <= max_row; i++) {
+      const row = [];
       matrix.push(row);
-      for (var j = min_col; j <= max_col; j++) {
-        var cell_name = int_2_col_str(j) + i;
-        var cell_full_name = sheet_name + '!' + cell_name;
+      for (let j = min_col; j <= max_col; j++) {
+        const cell_name = int_2_col_str(j) + i;
+        const cell_full_name = sheet_name + '!' + cell_name;
         if (formula.formula_ref[cell_full_name]) {
           if (formula.formula_ref[cell_full_name].status === 'new') {
             exec_formula(formula.formula_ref[cell_full_name]);
-          }
-          else if (formula.formula_ref[cell_full_name].status === 'working') {
+          } else if (formula.formula_ref[cell_full_name].status === 'working') {
             throw new Error('Circular ref');
           }
           row.push(sheet[cell_name].v);
-        }
-        else if (sheet[cell_name]) {
+        } else if (sheet[cell_name]) {
           row.push(sheet[cell_name].v);
-        }
-        else {
+        } else {
           row.push(null);
         }
       }
@@ -568,39 +554,36 @@ function Range(str_expression, formula) {
   };
 }
 
-var exp_id = 0;
+let exp_id = 0;
 
 function Exp(formula) {
-  var self = this;
+  const self = this;
   self.id = ++exp_id;
   self.args = [];
   self.name = 'Expression';
 
   function exec(op, fn) {
-    for (var i = 0; i < self.args.length; i++) {
+    for (let i = 0; i < self.args.length; i++) {
       if (self.args[i] === op) {
         try {
-          var r = fn(self.args[i - 1].calc(), self.args[i + 1].calc());
+          const r = fn(self.args[i - 1].calc(), self.args[i + 1].calc());
           self.args.splice(i - 1, 3, new RawValue(r));
           i--;
-        }
-        catch (e) {
+        } catch (e) {
           throw Error(formula.name + ': evaluating ' + formula.cell.f + '\n' + e.message);
-          //throw e;
         }
       }
     }
   }
 
   function exec_minus() {
-    for (var i = self.args.length; i--;) {
+    for (let i = self.args.length; i--;) {
       if (self.args[i] === '-') {
-        var r = -self.args[i + 1].calc();
+        const r = -self.args[i + 1].calc();
         if (typeof self.args[i - 1] !== 'string' && i > 0) {
           self.args.splice(i, 1, '+');
           self.args.splice(i + 1, 1, new RawValue(r));
-        }
-        else {
+        } else {
           self.args.splice(i, 2, new RawValue(r));
         }
       }
@@ -637,13 +620,13 @@ function Exp(formula) {
       return a <= b;
     });
     exec('<>', function(a, b) {
-      return a != b;
+      return a !== b;
     });
     exec('=', function(a, b) {
-      return a == b;
+      return a === b;
     });
-    if (self.args.length == 1) {
-      if (typeof(self.args[0].calc) != 'function') {
+    if (self.args.length === 1) {
+      if (typeof(self.args[0].calc) !== 'function') {
         return self.args[0];
       } else {
         return self.args[0].calc();
@@ -651,53 +634,40 @@ function Exp(formula) {
     }
   };
 
-  var last_arg;
+  let last_arg;
   self.push = function(buffer) {
     if (buffer) {
-      var v;
+      let v;
       if (!isNaN(buffer)) {
         v = new RawValue(+buffer);
-      }
-      else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
+      } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
         v = new Range(buffer.trim().replace(/\$/g, ''), formula);
-      }
-      else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
+      } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
         v = new Range(buffer.trim().replace(/\$/g, ''), formula);
-      }
-      else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+:[A-Z]+$/)) {
+      } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+:[A-Z]+$/)) {
         v = new Range(buffer.trim().replace(/\$/g, ''), formula);
-      }
-      else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+:[A-Z]+$/)) {
+      } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+:[A-Z]+$/)) {
         v = new Range(buffer.trim().replace(/\$/g, ''), formula);
-      }
-      else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+[0-9]+$/)) {
+      } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[A-Z]+[0-9]+$/)) {
         v = new RefValue(buffer.trim().replace(/\$/g, ''), formula);
-      }
-      else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+[0-9]+$/)) {
+      } else if (typeof buffer === 'string' && buffer.trim().replace(/\$/g, '').match(/^[^!]+![A-Z]+[0-9]+$/)) {
         v = new RefValue(buffer.trim().replace(/\$/g, ''), formula);
-      }
-      // else if (typeof buffer === 'string' && !isNaN(buffer.trim().replace(/%$/, ''))) {
-      //   v = new RawValue(+(buffer.trim().replace(/%$/, '')) / 100.0);
-      // }
-      else if (typeof buffer === 'string' && !isNaN(Number(buffer.trim().replace(/%$/, '')))) {
+      } else if (typeof buffer === 'string' && !isNaN(Number(buffer.trim().replace(/%$/, '')))) {
         v = new RawValue(+(buffer.trim().replace(/%$/, '')) / 100.0);
-      }
-      else {
+      } else {
         v = buffer;
       }
-      if (((v === '=') && (last_arg == '>' || last_arg == '<')) || (last_arg == '<' && v === '>')) {
+      if (((v === '=') && (last_arg === '>' || last_arg === '<')) || (last_arg === '<' && v === '>')) {
         self.args[self.args.length - 1] += v;
-      }
-      else {
+      } else {
         self.args.push(v);
       }
       last_arg = v;
-      //console.log(self.id, '-->', v);
     }
   };
 }
 
-var common_operations = {
+const common_operations = {
   '*': 'multiply',
   '+': 'plus',
   '-': 'minus',
@@ -706,7 +676,7 @@ var common_operations = {
   '&': 'concat',
   '<': 'lt',
   '>': 'gt',
-  '=': 'eq'
+  '=': 'eq',
 };
 
 interface Fn {
@@ -716,68 +686,64 @@ interface Fn {
 
 function exec_formula(formula) {
   formula.status = 'working';
-  var root_exp;
-  var str_formula = formula.cell.f;
-  if (str_formula[0] == '=') {
+  let root_exp;
+  let str_formula = formula.cell.f;
+  if (str_formula[0] === '=') {
     str_formula = str_formula.substr(1);
   }
-  var exp_obj = root_exp = new Exp(formula);
-  var buffer = '',
-    is_string = false,
-    was_string = false;
-  var fn_stack: Fn[] = [{
-    exp: exp_obj
+  let exp_obj = root_exp = new Exp(formula);
+  let buffer = '';
+  let is_string = false;
+  let was_string = false;
+  const fn_stack: Fn[] = [{
+    exp: exp_obj,
   }];
-  for (var i = 0; i < str_formula.length; i++) {
-    if (str_formula[i] == '"') {
+  for (const token of str_formula) {
+    if (token === '"') {
       if (is_string) {
         exp_obj.push(new RawValue(buffer));
         is_string = false;
         was_string = true;
-      }
-      else {
+      } else {
         is_string = true;
       }
       buffer = '';
-    }
-    else if (is_string) {
-      buffer += str_formula[i];
-    }
-    else if (str_formula[i] == '(') {
-      var o, trim_buffer = buffer.trim(), special = xlsx_Fx[trim_buffer];
+    } else if (is_string) {
+      buffer += token;
+    } else if (token === '(') {
+      let o;
+      const trim_buffer = buffer.trim();
+      let special = xlsx_Fx[trim_buffer];
       if (special) {
         // special = new UserFnExecutor(special, formula);
-        special = new UserFnExecutor(special, /* formula */);
-      }
-      else if (trim_buffer) {
-        //Error: "Worksheet 1"!D145: Function INDEX not found
-        throw new Error('"' + formula.sheet_name + '"!'+ formula.name + ': Function ' + buffer + ' not found');
+        special = new UserFnExecutor(special /* formula */);
+      } else if (trim_buffer) {
+        // Error: "Worksheet 1"!D145: Function INDEX not found
+        throw new Error('"' + formula.sheet_name + '"!' + formula.name + ': Function ' + buffer + ' not found');
       }
       o = new Exp(formula);
       fn_stack.push({
         exp: o,
-        special: special
+        special,
       });
       exp_obj = o;
       buffer = '';
-    }
-    else if (common_operations[str_formula[i]]) {
+    } else if (common_operations[token]) {
       if (!was_string) {
         exp_obj.push(buffer);
       }
       was_string = false;
-      exp_obj.push(str_formula[i]);
+      exp_obj.push(token);
       buffer = '';
-    }
-    else if (str_formula[i] === ',' && fn_stack[fn_stack.length - 1].special) {
+    } else if (token === ',' && fn_stack[fn_stack.length - 1].special) {
       was_string = false;
       fn_stack[fn_stack.length - 1].exp.push(buffer);
       fn_stack[fn_stack.length - 1].special.push(fn_stack[fn_stack.length - 1].exp);
       fn_stack[fn_stack.length - 1].exp = exp_obj = new Exp(formula);
       buffer = '';
-    }
-    else if (str_formula[i] == ')') {
-      var v, stack = fn_stack.pop();
+    } else if (token === ')') {
+      let v;
+      const stack = fn_stack.pop();
       exp_obj = stack.exp;
       exp_obj.push(buffer);
       v = exp_obj;
@@ -786,13 +752,11 @@ function exec_formula(formula) {
       if (stack.special) {
         stack.special.push(v);
         exp_obj.push(stack.special);
-      }
-      else {
+      } else {
         exp_obj.push(v);
       }
-    }
-    else {
-      buffer += str_formula[i];
+    } else {
+      buffer += token;
     }
   }
   root_exp.push(buffer);
@@ -803,37 +767,35 @@ function exec_formula(formula) {
     } else if (typeof(formula.cell.v) === 'number') {
       formula.cell.t = 'n';
     }
-  }
-  catch (e) {
-    if (e.message == '#N/A') {
+  } catch (e) {
+    if (e.message === '#N/A') {
       formula.cell.v = 42;
       formula.cell.t = 'e';
       formula.cell.w = e.message;
-    }
-    else {
+    } else {
       throw e;
     }
-  }
-  finally {
+  } finally {
     formula.status = 'done';
   }
 }
 
 function find_all_cells_with_formulas(wb) {
-  var formula_ref = {};
-  var cells = [];
-  for (var sheet_name in wb.Sheets) {
-    var sheet = wb.Sheets[sheet_name];
-    for (var cell_name in sheet) {
+  const formula_ref = {};
+  const cells = [];
+  const keys = Object.keys(wb.Sheets);
+  for (const sheet_name of keys) {
+    const sheet = wb.Sheets[sheet_name];
+    for (const cell_name in sheet) {
       if (sheet[cell_name].f) {
-        var formula = formula_ref[sheet_name + '!' + cell_name] = {
-          formula_ref: formula_ref,
-          wb: wb,
-          sheet: sheet,
-          sheet_name: sheet_name,
+        const formula = formula_ref[sheet_name + '!' + cell_name] = {
+          formula_ref,
+          wb,
+          sheet,
+          sheet_name,
           cell: sheet[cell_name],
           name: cell_name,
-          status: 'new'
+          status: 'new',
         };
         cells.push(formula);
       }

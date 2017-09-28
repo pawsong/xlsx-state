@@ -3,29 +3,29 @@ import * as XLSX from 'xlsx';
 import XLSX_CALC, { int_2_col_str } from '../src';
 
 describe('Bugs', function() {
-    var workbook;
+    let workbook;
     beforeEach(function() {
         workbook = {
             Sheets: {
                 Sheet1: {
                     A1: {},
                     A2: {
-                        v: 7
+                        v: 7,
                     },
                     C2: {
-                        v: 1
+                        v: 1,
                     },
                     C3: {
-                        v: 1
+                        v: 1,
                     },
                     C4: {
-                        v: 2
+                        v: 2,
                     },
                     C5: {
-                        v: 3
+                        v: 3,
                     },
-                }
-            }
+                },
+            },
         };
     });
     it('should consider the end of string', function() {

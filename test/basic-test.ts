@@ -3,29 +3,29 @@ import XLSX_CALC, { set_fx, exec_fx, int_2_col_str } from '../src';
 import * as assert from 'assert';
 
 describe('XLSX_CALC', function() {
-    var workbook;
+    let workbook;
     beforeEach(function() {
         workbook = {
             Sheets: {
                 Sheet1: {
                     A1: {},
                     A2: {
-                        v: 7
+                        v: 7,
                     },
                     C2: {
-                        v: 1
+                        v: 1,
                     },
                     C3: {
-                        v: 1
+                        v: 1,
                     },
                     C4: {
-                        v: 2
+                        v: 2,
                     },
                     C5: {
-                        v: 3
+                        v: 3,
                     },
-                }
-            }
+                },
+            },
         };
     });
     describe('plus', function() {
@@ -454,7 +454,7 @@ describe('XLSX_CALC', function() {
             function() {
                 XLSX_CALC(workbook);
             },
-            /Circular ref/
+            /Circular ref/,
         );
     });
     it('throws a function XPTO not found', function() {
@@ -463,7 +463,7 @@ describe('XLSX_CALC', function() {
             function() {
                 XLSX_CALC(workbook);
             },
-            /"Sheet1"!A1.*Function XPTO not found/
+            /"Sheet1"!A1.*Function XPTO not found/,
         );
     });
     describe('PTM', function() {
@@ -482,9 +482,9 @@ describe('XLSX_CALC', function() {
     describe('COUNTA', function() {
         it('counts non empty cells', function() {
             workbook.Sheets.Sheet1.A1.f = 'COUNTA(B1:B3)';
-            workbook.Sheets.Sheet1.B1 = {v:1};
+            workbook.Sheets.Sheet1.B1 = { v: 1 };
             workbook.Sheets.Sheet1.B2 = {};
-            workbook.Sheets.Sheet1.B3 = {v:1};
+            workbook.Sheets.Sheet1.B3 = { v: 1 };
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A1.v, 2);
         });
@@ -552,7 +552,7 @@ describe('XLSX_CALC', function() {
             assert.equal(workbook.Sheets.Sheet1.A7.v.toFixed(8), 0.01583333);
         });
         it('calls the VAR.P', function() {
-            var x = exec_fx('VAR.P', [0.1, 0.5, 0.2, 0.3, 0.2, 0.2]);
+            const x = exec_fx('VAR.P', [0.1, 0.5, 0.2, 0.3, 0.2, 0.2]);
             assert.equal(x.toFixed(8), 0.01583333);
         });
     });
@@ -608,28 +608,28 @@ describe('XLSX_CALC', function() {
     describe('Sheet ref references', function() {
         it('calculates the sum of Sheet2!A1+Sheet2!A2', function() {
             workbook.Sheets.Sheet1.A1.f = 'Sheet2!A1+Sheet2!A2';
-            workbook.Sheets.Sheet2 = { A1: {v:1}, A2: {v:2}};
+            workbook.Sheets.Sheet2 = { A1: { v: 1 }, A2: { v: 2 }};
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A1.v, 3);
         });
         it('calculates the sum of Sheet2!A1:A2', function() {
             workbook.Sheets.Sheet1.A1.f = 'SUM(Sheet2!A1:A2)';
-            workbook.Sheets.Sheet2 = { A1: {v:1}, A2: {v:2}};
+            workbook.Sheets.Sheet2 = { A1: { v: 1 }, A2: { v: 2 }};
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A1.v, 3);
         });
         it('calculates the sum of Sheet2!A:B', function() {
             this.timeout(5000);
             workbook.Sheets.Sheet1.A1.f = 'SUM(Sheet2!A:B)';
-            workbook.Sheets.Sheet2 = { A1: {v:1}, B1: {v:2}, A2: {v: 3}};
+            workbook.Sheets.Sheet2 = { A1: { v: 1 }, B1: { v: 2 }, A2: {v: 3}};
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A1.v, 6);
         });
     });
     describe('Cell type: A2.t = "s" or A2.t = "n"', function() {
         it('should set t = "s" for string values', function() {
-            workbook.Sheets.Sheet1.A1 = { v: " some string " };
-            workbook.Sheets.Sheet1.A2 = { f: "TRIM(A1)" };
+            workbook.Sheets.Sheet1.A1 = { v: ' some string ' };
+            workbook.Sheets.Sheet1.A2 = { f: 'TRIM(A1)' };
 
             /* calculate */
             XLSX_CALC(workbook);
@@ -637,8 +637,8 @@ describe('XLSX_CALC', function() {
             assert.equal(workbook.Sheets.Sheet1.A2.v, 'some string');
         });
         it('should set t = "n" for numeric values', function() {
-            workbook.Sheets.Sheet1.A1 = { v: " some string " };
-            workbook.Sheets.Sheet1.A2 = { f: "LEN(TRIM(A1))" };
+            workbook.Sheets.Sheet1.A1 = { v: ' some string ' };
+            workbook.Sheets.Sheet1.A2 = { f: 'LEN(TRIM(A1))' };
 
             /* calculate */
             XLSX_CALC(workbook);

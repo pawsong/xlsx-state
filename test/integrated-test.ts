@@ -4,11 +4,12 @@ import XLSX_CALC from '../src';
 
 describe('XLSX with XLSX_CALC', function() {
     function assert_values(sheet_calculated, sheet_expected) {
-        for (var prop in sheet_expected) {
-            if(prop.match(/[A-Z]+[0-9]+/)) {
-                assert.equal(sheet_expected[prop].v, sheet_calculated[prop].v, "Error: " + prop + ' f="' + sheet_expected[prop].f +'"');
-                assert.equal(sheet_expected[prop].w, sheet_calculated[prop].w, "Error: " + prop + ' f="' + sheet_expected[prop].f +'"');
-                assert.equal(sheet_expected[prop].t, sheet_calculated[prop].t, "Error: " + prop + ' f="' + sheet_expected[prop].f +'"');
+        const keys = Object.keys(sheet_expected);
+        for (const prop of keys) {
+            if (prop.match(/[A-Z]+[0-9]+/)) {
+                assert.equal(sheet_expected[prop].v, sheet_calculated[prop].v, 'Error: ' + prop + ' f="' + sheet_expected[prop].f + '"');
+                assert.equal(sheet_expected[prop].w, sheet_calculated[prop].w, 'Error: ' + prop + ' f="' + sheet_expected[prop].f + '"');
+                assert.equal(sheet_expected[prop].t, sheet_calculated[prop].t, 'Error: ' + prop + ' f="' + sheet_expected[prop].f + '"');
             }
         }
     }
@@ -19,13 +20,15 @@ describe('XLSX with XLSX_CALC', function() {
         return read_workbook().Sheets.Sheet1;
     }
     function erase_values_that_contains_formula(sheet) {
-        for (var prop in sheet) {
-            if(prop.match(/[A-Z]+[0-9]+/) && sheet[prop].f) {
+        const keys = Object.keys(sheet);
+        for (const prop of keys) {
+            if (prop.match(/[A-Z]+[0-9]+/) && sheet[prop].f) {
                 sheet[prop].v = null;
             }
         }
     }
-    var workbook, original_sheet;
+    let workbook;
+    let original_sheet;
     beforeEach(function() {
         workbook = read_workbook();
         erase_values_that_contains_formula(workbook.Sheets.Sheet1);

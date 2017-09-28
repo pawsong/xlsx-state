@@ -6,7 +6,7 @@ describe('formulajs integration', function() {
     describe('XLSX_CALC.import_functions()', function() {
         it('imports the functions from formulajs', function() {
             import_functions(formulajs);
-            var workbook: any = {};
+            const workbook: any = {};
             workbook.Sheets = {};
             workbook.Sheets.Sheet1 = {};
             workbook.Sheets.Sheet1.A1 = {v: 2};
@@ -19,7 +19,7 @@ describe('formulajs integration', function() {
         });
         it('imports the functions with dot names like BETA.DIST', function() {
             import_functions(formulajs);
-            var workbook: any = {Sheets: {Sheet1: {}}};
+            const workbook: any = {Sheets: {Sheet1: {}}};
             workbook.Sheets.Sheet1.A5 = {f: 'BETA.DIST(2, 8, 10, true, 1, 3)'};
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A5.v.toFixed(10), (0.6854705810117458).toFixed(10));
