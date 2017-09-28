@@ -17,7 +17,8 @@
     "clean": "rimraf lib",
     "test": "mocha --compilers ts:ts-node/register",
     "test:watch": "npm run test -- --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.43",
