@@ -1,6 +1,6 @@
-var XLSX_CALC = require('../');
-var XLSX = require('xlsx');
-var assert = require('assert');
+import * as assert from 'assert';
+import * as XLSX from 'xlsx';
+import XLSX_CALC, { int_2_col_str } from '../src';
 
 describe('Bugs', function() {
     var workbook;
@@ -57,7 +57,7 @@ describe('Bugs', function() {
         assert.equal(workbook.Sheets.Sheet1.A2.v, 1054);
     });
     it('returns the correct string for column', function() {
-        assert.equal(XLSX_CALC.int_2_col_str(130), 'EA');
+        assert.equal(int_2_col_str(130), 'EA');
     });
     it('resolves the bug of quoted sheet names', function() {
         workbook = XLSX.readFile('test/abc.xlsx');

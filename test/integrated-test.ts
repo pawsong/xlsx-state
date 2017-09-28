@@ -1,6 +1,6 @@
-var assert = require('assert');
-var XLSX = require('xlsx');
-var XLSX_CALC = require("../");
+import * as assert from 'assert';
+import * as XLSX from 'xlsx';
+import XLSX_CALC from '../src';
 
 describe('XLSX with XLSX_CALC', function() {
     function assert_values(sheet_calculated, sheet_expected) {
@@ -34,5 +34,5 @@ describe('XLSX with XLSX_CALC', function() {
     it('recalc the workbook', function() {
         XLSX_CALC(workbook);
         assert_values(original_sheet, workbook.Sheets.Sheet1);
-    });  
+    });
 });

@@ -1,5 +1,6 @@
-var XLSX_CALC = require("../");
-var assert = require('assert');
+import XLSX_CALC, { set_fx, exec_fx, int_2_col_str } from '../src';
+
+import * as assert from 'assert';
 
 describe('XLSX_CALC', function() {
     var workbook;
@@ -147,7 +148,7 @@ describe('XLSX_CALC', function() {
     });
     describe('.set_fx', function() {
         it('sets new function', function() {
-            XLSX_CALC.set_fx('ADD_1', function(arg) {
+            set_fx('ADD_1', function(arg) {
                 return arg + 1;
             });
             workbook.Sheets.Sheet1.A1.f = 'ADD_1(123)';
@@ -476,7 +477,7 @@ describe('XLSX_CALC', function() {
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A1.v, -122.6510706427692);
         });
-        
+
     });
     describe('COUNTA', function() {
         it('counts non empty cells', function() {
@@ -551,7 +552,7 @@ describe('XLSX_CALC', function() {
             assert.equal(workbook.Sheets.Sheet1.A7.v.toFixed(8), 0.01583333);
         });
         it('calls the VAR.P', function() {
-            var x = XLSX_CALC.exec_fx('VAR.P', [0.1, 0.5, 0.2, 0.3, 0.2, 0.2]);
+            var x = exec_fx('VAR.P', [0.1, 0.5, 0.2, 0.3, 0.2, 0.2]);
             assert.equal(x.toFixed(8), 0.01583333);
         });
     });
@@ -563,14 +564,14 @@ describe('XLSX_CALC', function() {
             workbook.Sheets.Sheet1.A4 = {v: 0.03};
             workbook.Sheets.Sheet1.A5 = {v: 0.02};
             workbook.Sheets.Sheet1.A6 = {v: 0.02};
-            
+
             workbook.Sheets.Sheet1.B1 = {v: 0.1};
             workbook.Sheets.Sheet1.B2 = {v: 0.5};
             workbook.Sheets.Sheet1.B3 = {v: 0.2};
             workbook.Sheets.Sheet1.B4 = {v: 0.3};
             workbook.Sheets.Sheet1.B5 = {v: 0.2};
             workbook.Sheets.Sheet1.B6 = {v: 0.2};
-            
+
             workbook.Sheets.Sheet1.A7 = {f: 'COVARIANCE.P(A1:A6,B1:B6)'};
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A7.v.toFixed(8), 0.00158333);
@@ -578,16 +579,16 @@ describe('XLSX_CALC', function() {
     });
     describe('#int_2_col_str', function() {
         it('should returns A', function() {
-            assert.equal(XLSX_CALC.int_2_col_str(0), 'A');
+            assert.equal(int_2_col_str(0), 'A');
         });
         it('should returns B', function() {
-            assert.equal(XLSX_CALC.int_2_col_str(1), 'B');
+            assert.equal(int_2_col_str(1), 'B');
         });
         it('should returns AZ', function() {
-            assert.equal(XLSX_CALC.int_2_col_str(51), 'AZ');
+            assert.equal(int_2_col_str(51), 'AZ');
         });
         it('should returns BA', function() {
-            assert.equal(XLSX_CALC.int_2_col_str(52), 'BA');
+            assert.equal(int_2_col_str(52), 'BA');
         });
     });
     describe('EXP', function() {
@@ -629,7 +630,7 @@ describe('XLSX_CALC', function() {
         it('should set t = "s" for string values', function() {
             workbook.Sheets.Sheet1.A1 = { v: " some string " };
             workbook.Sheets.Sheet1.A2 = { f: "TRIM(A1)" };
-            
+
             /* calculate */
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A2.t, 's');
@@ -638,14 +639,14 @@ describe('XLSX_CALC', function() {
         it('should set t = "n" for numeric values', function() {
             workbook.Sheets.Sheet1.A1 = { v: " some string " };
             workbook.Sheets.Sheet1.A2 = { f: "LEN(TRIM(A1))" };
-            
+
             /* calculate */
             XLSX_CALC(workbook);
             assert.equal(workbook.Sheets.Sheet1.A2.t, 'n');
             assert.equal(workbook.Sheets.Sheet1.A2.v, 11);
         });
     });
-    
+
     // describe('HELLO', function() {
     //     it('says: Hello, World!', function() {
     //         workbook.Sheets.Sheet1.A1.f = 'HELLO("World")';
