@@ -646,12 +646,4 @@ describe('XLSX_CALC', function() {
             assert.equal(workbook.Sheets.Sheet1.A2.v, 11);
         });
     });
-
-    // describe('HELLO', function() {
-    //     it('says: Hello, World!', function() {
-    //         workbook.Sheets.Sheet1.A1.f = 'HELLO("World")';
-    //         XLSX_CALC(workbook);
-    //         assert.equal(workbook.Sheets.Sheet1.A1.v, "Hello, World!");
-    //     });
-    // });
 });

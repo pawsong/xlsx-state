@@ -27,16 +27,12 @@ const xlsx_Fx = {
   'COVARIANCE.P': covariance_p,
   'TRIM': trim,
   'LEN': len,
-  // 'HELLO': hello
 };
 
 // +---------------------+
 // | THE IMPLEMENTATIONS |
 // +---------------------+
 
-// function hello(name) {
-//   return "Hello, " + name + "!";
-// }
 function len(a) {
   return ('' + a).length;
 }
@@ -381,35 +377,6 @@ function vlookup(key, matrix, return_index) {
     }
   }
   throw Error('#N/A');
-}
-
-export default function(workbook) {
-  const formulas = find_all_cells_with_formulas(workbook);
-  for (let i = formulas.length - 1; i >= 0; i--) {
-    exec_formula(formulas[i]);
-  }
-}
-
-export function set_fx(name, fn) {
-  xlsx_Fx[name] = fn;
-}
-
-export function exec_fx(name, args) {
-  return xlsx_Fx[name].apply(this, args);
-}
-
-export function import_functions(formulajs, opts?) {
-  opts = opts || {};
-  const prefix = opts.prefix || '';
-  const keys = Object.keys(formulajs);
-  for (const key of keys) {
-    const obj = formulajs[key];
-    if (typeof(obj) === 'function') {
-      xlsx_Fx[prefix + key] = obj;
-    } else if (typeof(obj) === 'object') {
-      import_functions(obj, my_assign(opts, {prefix: key + '.'}));
-    }
-  }
 }
 
 function my_assign(dest, source) {
@@ -802,4 +769,33 @@ function find_all_cells_with_formulas(wb) {
     }
   }
   return cells;
+}
+
+export function set_fx(name, fn) {
+  xlsx_Fx[name] = fn;
+}
+
+export function exec_fx(name, args) {
+  return xlsx_Fx[name].apply(this, args);
+}
+
+export function import_functions(formulajs, opts?) {
+  opts = opts || {};
+  const prefix = opts.prefix || '';
+  const keys = Object.keys(formulajs);
+  for (const key of keys) {
+    const obj = formulajs[key];
+    if (typeof(obj) === 'function') {
+      xlsx_Fx[prefix + key] = obj;
+    } else if (typeof(obj) === 'object') {
+      import_functions(obj, my_assign(opts, {prefix: key + '.'}));
+    }
+  }
+}
+
+export default function(workbook) {
+  const formulas = find_all_cells_with_formulas(workbook);
+  for (let i = formulas.length - 1; i >= 0; i--) {
+    exec_formula(formulas[i]);
+  }
 }
